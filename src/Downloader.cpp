@@ -1,7 +1,5 @@
 // Author: Apostolos Chalis 2026 <achalis@csd.auth.gr>
 // Co-Author: Ioannis Michadasis
-#include "ui_MainWindow.h"
-#include "MainWindow.hpp"
 #include "Downloader.hpp"
 
 #include <QDebug>
