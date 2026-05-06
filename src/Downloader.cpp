@@ -12,17 +12,20 @@
 
 QString Downloader::check_package_manager() {
     if (!QStandardPaths::findExecutable("pacman").isEmpty()){
+        qDebug() << "Pacman found.";
         return "pacman";
     } else if (!QStandardPaths::findExecutable("apt").isEmpty()) {
+        qDebug() << "Apt found.";
         return "apt";
+    } else {
+        qDebug() << "No supported package manager found.";
+        return "Unsupported";
     }
-    return "Unsupported";
 }
-
 
 bool Downloader::is_in_pacman_repo(const QString &package_name) {
     QProcess process;
-
+	
     process.start("pacman", QStringList() << "-Si" << package_name);
     process.waitForFinished();
     return (process.exitCode() == 0);
@@ -39,34 +42,43 @@ bool Downloader::is_in_apt_repo(const QString &package_name) {
 
 QStringList Downloader::read_package_list(bool standard_package_manager, QString package_manager) {
     QStringList result_list;
-    QString type = (package_manager == "pacman") ? "pacman_list.txt" : "apt_list.txt";
-    QString filepath_of_list = ":/lists/" + name_of_university + "/" + name_of_department + "/" + type;
+    // Determine the correct list file based on the package manager
+    QString list_file = (package_manager == "pacman") ? "pacman_list.txt" : "apt_list.txt";
+    QString filepath_of_list = ":/lists/" + name_of_university + "/" + name_of_department + "/" + list_file;
 
+    qDebug() << "Reading package list from: " << filepath_of_list;
+    
     QFile file(filepath_of_list);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Critical Error: Could not open " << filepath_of_list;
+        qDebug() << "Critical Error: Could not open the file!" << file.errorString();
         return result_list;
     }
 
     QTextStream in(&file);
-	
+
     while (!in.atEnd()) {
         QString package = in.readLine().trimmed();
         if (!package.isEmpty()) {
-            // Only check repo if necessary to save time
+            // Check repo availability to avoid apt errors later
             bool exists = (package_manager == "pacman") ? is_in_pacman_repo(package) : is_in_apt_repo(package);
-            if (exists) result_list.append(package);
+            if (exists) {
+                qDebug() << "Adding package to installable list: " << package;
+                result_list.append(package);
+            }
         }
     }
-    file.close();
+    file.close(); 
     return result_list;
 }
 
 void Downloader::download_via_pacman(const QStringList &list_to_be_downloaded) {
-    if (list_to_be_downloaded.isEmpty()) return;
+    if (list_to_be_downloaded.isEmpty()) {
+        emit download_completed(false);
+        return;
+    }
 
-    QMessageBox::warning(nullptr, "Update Advised", "Please run 'sudo pacman -Syu' first.");
+    QMessageBox::warning(nullptr, "Warning", "It is advised to update your system via 'pacman -Syu' first.");
 
     QProcess *proc = new QProcess(this);
     proc->setProcessChannelMode(QProcess::MergedChannels);
@@ -79,10 +91,17 @@ void Downloader::download_via_pacman(const QStringList &list_to_be_downloaded) {
     });
 
     connect(proc, &QProcess::finished, [=](int exitCode) {
-        emit download_completed(exitCode == 0);
+        if (exitCode == 0) {
+            emit status_message("\n✓ Finished! All packages are installed.");
+            emit download_completed(true);
+        } else {
+            emit status_message("\n✗ Error: Pacman failed with exit code " + QString::number(exitCode));
+            emit download_completed(false);
+        }
         proc->deleteLater();
     });
 
+    qDebug() << "Executing: pkexec" << args.join(" ");
     proc->start("pkexec", args);
 }
 
@@ -105,14 +124,15 @@ void Downloader::download_via_apt(const QStringList &list_to_be_downloaded) {
 
     connect(proc, &QProcess::finished, [=](int exitCode) {
         if (exitCode == 0) {
-            emit status_message("\n✓ All packages installed successfully.");
+            emit status_message("\n✓ Finished! All packages are installed.");
             emit download_completed(true);
         } else {
-            emit status_message("\n✗ Error during installation.");
+            emit status_message("\n✗ Error: Apt failed with exit code " + QString::number(exitCode));
             emit download_completed(false);
         }
         proc->deleteLater();
     });
 
+    qDebug() << "Executing: pkexec" << args.join(" ");
     proc->start("pkexec", args);
 }
