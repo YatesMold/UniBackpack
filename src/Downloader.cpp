@@ -7,6 +7,7 @@
 #include <QTextStream>
 #include <QStandardPaths>
 #include <QProcessEnvironment>
+#include <QRegularExpression>
 
 QString Downloader::check_package_manager() {
     if (!QStandardPaths::findExecutable("pacman").isEmpty()) {
@@ -136,6 +137,14 @@ QStringList Downloader::read_package_list(bool standard_package_manager, QString
 }
 
 void Downloader::download_via_pacman(const QStringList &list_to_be_downloaded) {
+    // there is a problem with pacman -Syu though, so the user should be alerted about that
+    QMessageBox::warning(
+        nullptr,
+        "Warning",
+        "It is advised to update your system before proceeding."
+        "\nRun sudo pacman -Syu"
+    );
+
     if (list_to_be_downloaded.isEmpty()) {
         qDebug() << "Download list is empty\nNothing to do.";
         emit download_completed(false);
@@ -144,30 +153,31 @@ void Downloader::download_via_pacman(const QStringList &list_to_be_downloaded) {
 
     qDebug() << "Starting to download package list via pacman";
 
-    int total = list_to_be_downloaded.size();
-    int *installed = new int(0);
-
     QProcess *download_process = new QProcess(this);
 
     connect(download_process, &QProcess::readyReadStandardOutput, this, [=]() {
         QString output = download_process->readAllStandardOutput();
         emit status_message(output);
 
-        // pacman prints "installing pkgname..." for each package
-        int count = output.count("installing ", Qt::CaseInsensitive);
-        count += output.count("upgrading ", Qt::CaseInsensitive);
-        if (count > 0) {
-            *installed += count;
-            int percent = static_cast<int>((*installed * 100.0) / total);
-            emit progress_updated(qMin(percent, 99));
+        static QRegularExpression pacman_re(R"(\((\d+)/(\d+)\))");
+        QRegularExpressionMatch match = pacman_re.match(output);
+        if (match.hasMatch()) {
+            int current = match.captured(1).toInt();
+            int total = match.captured(2).toInt();
+            if (total > 0) {
+                int percent = static_cast<int>((current * 100.0) / total);
+                emit progress_updated(qMin(percent, 99));
+            }
         }
     });
+
     connect(download_process, &QProcess::readyReadStandardError, this, [=]() {
         emit status_message(download_process->readAllStandardError());
     });
+
     connect(download_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [=](int exitCode, QProcess::ExitStatus) {
-        delete installed;
+            this, [=](int exitCode, QProcess::ExitStatus status) {
+        qDebug() << "Process finished with exit code:" << exitCode << "status:" << status;
         if (exitCode == 0) {
             qDebug() << "Package list downloaded via pacman";
         } else {
