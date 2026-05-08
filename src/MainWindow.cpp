@@ -118,7 +118,6 @@ void MainWindow::on_university_selection(const QModelIndex &index) {
 
                 if (success) {
                     ui->statusLabel->setText("✓ Finished!");
-                    ui->progressBar->setFormat("Done!");
                     ui->progressBar->setStyleSheet("QProgressBar::chunk { background-color: #4CAF50; }");
                 } else {
                     ui->statusLabel->setText("✗ Installation failed.");
