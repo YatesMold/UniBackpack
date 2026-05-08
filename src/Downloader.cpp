@@ -28,10 +28,10 @@ bool Downloader::is_in_pacman_repo(const QString &package_name) {
     process.start("pacman", QStringList() << "-Si" << package_name);
     process.waitForFinished();
     if (process.exitCode() == 0) {
-        qDebug() << "Package" << package_name << "is available in pacman repositories.";
+        emit status_message(package_name + " is available in pacman repositories.");
         return true;
     } else {
-        qDebug() << "Package" << package_name << "is NOT available in pacman repositories.";
+        emit status_message(package_name + " is NOT available in pacman repositories.");
         return false;
     }
 }
@@ -41,10 +41,10 @@ bool Downloader::is_in_apt_repo(const QString &package_name) {
     process.start("apt-cache", QStringList() << "show" << package_name);
     process.waitForFinished();
     if (process.exitCode() == 0) {
-        qDebug() << "Package" << package_name << "is available in apt repositories.";
+        emit status_message(package_name + " is available in apt repositories.");
         return true;
     } else {
-        qDebug() << "Package" << package_name << "is NOT available in apt repositories.";
+        emit status_message(package_name + " is NOT available in apt repositories.");
         return false;
     }
 }
@@ -55,7 +55,7 @@ QStringList Downloader::read_package_list(bool standard_package_manager, QString
 
     if (standard_package_manager && package_manager == "pacman") {
         QString filepath_of_list = ":/lists/" + name_of_university + "/" + name_of_department + "/pacman_list.txt";
-        qDebug() << "Reading package list from: " << filepath_of_list;
+        emit status_message("Checking packages for " + name_of_department + "...");        
         QFile file(filepath_of_list);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             qDebug() << "Critical Error: Could not open the file!" << file.errorString();
@@ -75,7 +75,7 @@ QStringList Downloader::read_package_list(bool standard_package_manager, QString
 
     if (!standard_package_manager && package_manager == "pacman") {
         QString filepath_of_list = ":/lists/" + name_of_university + "/" + name_of_department + "/pacman_list.txt";
-        qDebug() << "Reading package list from: " << filepath_of_list;
+        emit status_message("Checking packages for " + name_of_department + "...");
         QFile file(filepath_of_list);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             qDebug() << "Critical Error: Could not open the file!" << file.errorString();
@@ -95,7 +95,7 @@ QStringList Downloader::read_package_list(bool standard_package_manager, QString
 
     if (standard_package_manager && package_manager == "apt") {
         QString filepath_of_list = ":/lists/" + name_of_university + "/" + name_of_department + "/apt_list.txt";
-        qDebug() << "Reading package list from: " << filepath_of_list;
+        emit status_message("Checking packages for " + name_of_department + "...");
         QFile file(filepath_of_list);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             qDebug() << "Critical Error: Could not open the file!" << file.errorString();
@@ -115,7 +115,7 @@ QStringList Downloader::read_package_list(bool standard_package_manager, QString
 
     if (!standard_package_manager && package_manager == "apt") {
         QString filepath_of_list = ":/lists/" + name_of_university + "/" + name_of_department + "/apt_list.txt";
-        qDebug() << "Reading package list from: " << filepath_of_list;
+        emit status_message("Checking packages for " + name_of_department + "...");
         QFile file(filepath_of_list);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             qDebug() << "Critical Error: Could not open the file!" << file.errorString();
