@@ -1,4 +1,7 @@
-# Executable 
+# .idea
+.idea/
+
+# Executable
 UniBackpack
 
 # Qt files 
