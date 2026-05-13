@@ -89,8 +89,6 @@ void MainWindow::on_university_selection(const QModelIndex &index) {
         QString package_manager = downloader->check_package_manager();
 
         if (package_manager != "Unsupported") {
-            QStringList packages_to_download = downloader->read_package_list(true, package_manager);
-
             ui->listView->setEnabled(false);
             ui->outputView->clear();
             ui->progressBar->setMaximum(100);
@@ -98,12 +96,19 @@ void MainWindow::on_university_selection(const QModelIndex &index) {
             ui->progressBar->setFormat("%p%");
             ui->progressBar->setStyleSheet("");
             ui->progressBar->setVisible(true);
-            ui->statusLabel->setText("Installing...");
+            ui->statusLabel->setText("Checking packages...");
             ui->statusLabel->setVisible(true);
             ui->showMoreButton->setVisible(true);
 
+            // Connect signals
             connect(downloader, &Downloader::status_message, this, [=](const QString &msg) {
                 ui->outputView->append(msg);
+
+                if (msg.startsWith("Found:") || msg.startsWith("Adding:") ||
+                    msg.startsWith("Checking") || msg.startsWith("Not found:") ||
+                    msg.startsWith("Adding (non-standard):")) {
+                    ui->statusLabel->setText(msg.trimmed());
+                }
 
                 for (const QString &line : msg.split('\n')) {
                     if (line.startsWith("dlstatus:") || line.startsWith("pmstatus:")) {
@@ -142,6 +147,10 @@ void MainWindow::on_university_selection(const QModelIndex &index) {
                 ui->progressBar->setValue(percent);
             });
 
+            // Read packages
+            QStringList packages_to_download = downloader->read_package_list(true, package_manager);
+
+            // Start download
             if (package_manager == "pacman") {
                 downloader->download_via_pacman(packages_to_download);
             } else if (package_manager == "apt") {
