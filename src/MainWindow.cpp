@@ -7,10 +7,8 @@
 
 #include <QDebug>
 #include <QStandardItemModel>
-#include <QStandardItem>
 #include <QIcon>
 #include <QTextEdit>
-#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
