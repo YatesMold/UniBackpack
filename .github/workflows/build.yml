@@ -1,0 +1,58 @@
+name: CI/CD Pipeline (Cppcheck + Debian Build)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    # --- CODE QUALITY CHECKS ---
+    - name: Install Cppcheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cppcheck
+
+    - name: Run Cppcheck Analysis
+      run: |
+        cppcheck --enable=warning,style,performance,portability \
+                 --error-exitcode=1 \
+                 --inline-suppr \
+                 src/ include/
+
+    # --- BUILD & PACKAGE (Only runs if Cppcheck passes) ---
+    - name: Install Qt6 & Build Dependencies
+      run: |
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          qt6-base-dev \
+          qt6-tools-dev \
+          qt6-tools-dev-tools \
+          policykit-1
+
+    - name: Configure CMake
+      run: |
+        cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build Code with CMake
+      run: |
+        cmake --build build --config Release
+
+    - name: Generate .deb Package File
+      run: |
+        cd build
+        cpack -G DEB
+
+    - name: Upload Debian Package Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: unibackpack-debian-package
+        path: build/*.deb
