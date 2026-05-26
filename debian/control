@@ -1,0 +1,13 @@
+Source: unibackpack
+Section: utils
+Priority: optional
+Maintainer: Apostolos Chalis <achalis@csd.auth.gr>
+Build-Depends: debhelper-compat (= 13), cmake, qt6-base-dev, qt6-tools-dev-tools
+Standards-Version: 4.6.2
+
+Package: unibackpack
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}, polkitd, pkexec
+Description: UniBackpack - University software installer
+ A Qt6 application that installs essential software packages
+ for Greek university students based on their department.

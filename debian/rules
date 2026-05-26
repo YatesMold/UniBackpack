@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DCMAKE_BUILD_TYPE=Release
+
+override_dh_auto_install:
+	dh_auto_install
+	# Safely rename the capitalized CMake output to proper lowercase convention
+	mv debian/unibackpack/usr/bin/UniBackpack debian/unibackpack/usr/bin/unibackpack
