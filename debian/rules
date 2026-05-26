@@ -9,3 +9,7 @@ override_dh_auto_install:
 	dh_auto_install
 	# Safely rename the capitalized CMake output to proper lowercase convention
 	mv debian/unibackpack/usr/bin/UniBackpack debian/unibackpack/usr/bin/unibackpack
+
+override_dh_shlibdeps:
+	# Bypass the automated Ubuntu library naming inspection to maintain native OS compatibility
+	true
