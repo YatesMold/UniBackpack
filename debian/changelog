@@ -1,5 +1,6 @@
-unibackpack (1.0.0) noble; urgency=low
+unibackpack (1.0.0-1) noble; urgency=low
 
-  * Initial release.
+  * Fix debian packaging path mismatch and clear up install rules
 
- -- Apostolos Chalis <achalis@csd.auth.gr>  Tue, 26 May 2026 00:00:00 +0000
+ -- Ioannis Michadasis <johnmichadasis@gmail.com>  Tue, 26 May 2026 16:55:00 +0300
+ 
