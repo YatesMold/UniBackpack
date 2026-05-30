@@ -42,7 +42,10 @@ bool Downloader::is_in_apt_repo(const QString &package_name) {
     QProcess process;
     process.start("apt-cache", QStringList() << "show" << package_name);
     process.waitForFinished();
-    if (process.exitCode() == 0) {
+
+    QString stdout_output = process.readAllStandardOutput();
+    
+    if (process.exitCode() == 0 && stdout_output.contains("Package:")) {
         emit status_message("Found: " + package_name);
         QCoreApplication::processEvents();
         return true;
