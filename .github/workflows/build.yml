@@ -24,7 +24,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           build-essential cmake \
-          qt6-base-dev qt6-tools-dev-tools \
+          qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
           libqt6widgets6 \
           cppcheck \
           dpkg-dev
@@ -50,8 +50,8 @@ jobs:
 
         cp build/UniBackpack UniBackpack-deb/usr/bin/unibackpack
 
-        if [ -f resources/icons/unibackpack.png ]; then
-          cp resources/icons/unibackpack.png \
+        if [ -f include/resources/icons/unibackpack.png ]; then
+          cp include/resources/icons/unibackpack.png \
             UniBackpack-deb/usr/share/icons/hicolor/256x256/apps/unibackpack.png
         fi
 
