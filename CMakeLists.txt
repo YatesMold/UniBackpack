@@ -26,7 +26,7 @@ add_executable(UniBackpack
         ui/MainWindow.ui
 
         # Resources
-        include/resources/resources.qrc
+        resources/resources.qrc
 )
 
 target_include_directories(UniBackpack PRIVATE include)

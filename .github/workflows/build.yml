@@ -50,8 +50,8 @@ jobs:
 
         cp build/UniBackpack UniBackpack-deb/usr/bin/unibackpack
 
-        if [ -f include/resources/icons/unibackpack.png ]; then
-          cp include/resources/icons/unibackpack.png \
+        if [ -f resources/icons/unibackpack.png ]; then
+          cp resources/icons/unibackpack.png \
             UniBackpack-deb/usr/share/icons/hicolor/256x256/apps/unibackpack.png
         fi
 
